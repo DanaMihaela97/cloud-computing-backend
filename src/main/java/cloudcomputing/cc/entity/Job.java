@@ -9,9 +9,13 @@ public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String title;
+    @Column(nullable = false)
     private String city;
+    @Column(length = 5000, nullable = false)
     private String description;
+    @Column(nullable = false)
     private String url;
 
     public Long getId() {
