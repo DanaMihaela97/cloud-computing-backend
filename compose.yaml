@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "7200:7200"
+    environment:
+      # Spring Boot application database connection
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/openingjobs
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - mysql
+    volumes:
+      - app-logs:/app/logs  # Optional: to persist application logs
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: openingjobs
+    ports:
+      - "3306:3306"  # Expose MySQL on the standard port
+    volumes:
+      - mysql-data:/var/lib/mysql  # Persistent MySQL data
+
+volumes:
+  mysql-data:
+  # Persistent storage for MySQL data
+  app-logs:
+  # Optional: storage for application logs
