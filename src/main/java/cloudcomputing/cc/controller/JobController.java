@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin("http://localhost:4200")
 @RequestMapping("/api/v1/openingjobs")
 public class JobController {
     private final JobService jobService;
