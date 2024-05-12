@@ -1,5 +1,6 @@
 package cloudcomputing.cc.entity;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
@@ -15,11 +16,11 @@ import org.springframework.core.env.Environment;
 
 @Configuration
 public class AWSClientConfig {
-    @Value("${aws.accessKey}")
-    private String accessKey;
+    @Value("${aws.access.key}")
+    private String awsAccessKey;
 
-    @Value("${aws.secretAccessKey}")
-    private String secretAccessKey;
+    @Value("${aws.secret.key}")
+    private String awsSecretKey;
 
     @Value("${aws.bucketName}")
     @Getter
@@ -27,16 +28,12 @@ public class AWSClientConfig {
 
 
 
-    private final Region region = Region.getRegion(Regions.US_EAST_1);
-
     @Bean
-    public AmazonS3 amazonS3() {
-        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretAccessKey);
-
-        return AmazonS3ClientBuilder
-                .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-                .withRegion(region.toString())
+    public AmazonS3 getAmazonS3Client() {
+        AWSCredentials credentails = new BasicAWSCredentials(awsAccessKey,awsSecretKey);
+        return AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(credentails))
+                .withRegion(Regions.US_EAST_1)
                 .build();
     }
 
