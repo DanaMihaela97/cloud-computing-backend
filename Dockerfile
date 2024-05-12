@@ -6,8 +6,8 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jdk-jammy
-COPY /home/ec2-user/.aws/credentials ~/.aws/credentials
-COPY /home/ec2-user/.aws/config ~/.aws/config
+COPY credentials ~/.aws/credentials
+COPY config ~/.aws/config
 WORKDIR /app
 COPY --from=build /app/target/*.jar /app/app.jar
 
