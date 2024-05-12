@@ -6,9 +6,10 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jdk-jammy
-WORKDIR /app
-COPY --from=build /app/target/*.jar /app/app.jar
 COPY ~/.aws/credentials ~/.aws/credentials
 COPY ~/.aws/config ~/.aws/config
+WORKDIR /app
+COPY --from=build /app/target/*.jar /app/app.jar
+
 EXPOSE 7200
 ENTRYPOINT ["java", "-jar", "app.jar"]
