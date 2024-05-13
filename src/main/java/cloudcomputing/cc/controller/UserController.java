@@ -5,7 +5,6 @@ import cloudcomputing.cc.entity.User;
 import cloudcomputing.cc.service.BucketService;
 import cloudcomputing.cc.service.UserService;
 import com.amazonaws.services.s3.AmazonS3;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +17,8 @@ import java.io.IOException;
 public class UserController {
     private final UserService userService;
     private final BucketService bucketService;
+
+
 
     @Autowired
     public UserController(UserService userService, BucketService bucketService) {
@@ -35,9 +36,10 @@ public class UserController {
     public String createUser(@RequestPart User user, @RequestPart MultipartFile cv) throws IOException {
 
 
-//        userService.createUser(user);
+        userService.createUser(user);
 //        bucketService.putObjectIntoBucket(awsClientConfig.getBucketName(), "danacv.pdf", cv.getInputStream());
 
         return bucketService.getBucketList().toString();
     }
+
 }

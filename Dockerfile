@@ -5,7 +5,7 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-alpine
 COPY credentials ~/.aws/credentials
 COPY config ~/.aws/config
 WORKDIR /app
