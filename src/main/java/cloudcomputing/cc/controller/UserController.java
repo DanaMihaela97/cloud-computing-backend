@@ -37,5 +37,12 @@ public class UserController {
 
         return StreamUtils.copyToString(response, StandardCharsets.UTF_8);
     }
+    @GetMapping("/test")
+    public String testS3() throws IOException{
+        ResponseInputStream<GetObjectResponse> response = s3Client.getObject(
+                request -> request.bucket("cvs-ccproject").key("file-name.txt"));
+
+        return StreamUtils.copyToString(response, StandardCharsets.UTF_8);
+    }
 
 }
