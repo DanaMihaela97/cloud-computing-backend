@@ -1,16 +1,12 @@
 package cloudcomputing.cc.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.Data;
 
-import java.io.File;
 
 @Entity
 @Table(name="users")
-@Getter
-@Setter
+@Data
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

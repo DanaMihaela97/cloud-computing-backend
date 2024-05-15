@@ -1,45 +1,41 @@
 package cloudcomputing.cc.controller;
 
-import cloudcomputing.cc.entity.AWSClientConfig;
 import cloudcomputing.cc.entity.User;
-import cloudcomputing.cc.service.BucketService;
 import cloudcomputing.cc.service.UserService;
-import com.amazonaws.services.s3.AmazonS3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/v1/openingjobs")
 public class UserController {
     private final UserService userService;
-    private final BucketService bucketService;
-
-
+    private final S3Client s3Client;
 
     @Autowired
-    public UserController(UserService userService, BucketService bucketService) {
+    public UserController(UserService userService, S3Client s3Client) {
         this.userService = userService;
-        this.bucketService = bucketService;
+        this.s3Client = s3Client;
     }
 
-    @Autowired
-    private AmazonS3 amazonS3;
-
-    @Autowired
-    private AWSClientConfig awsClientConfig;
-
     @PostMapping(path = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public String createUser(@RequestPart User user, @RequestPart MultipartFile cv) throws IOException {
+    public String createUser(@RequestPart User user, @RequestPart("cv") MultipartFile cv) throws IOException {
 
+//        String cvFileName = cv.getOriginalFilename();
+//        userService.createUser(user);
 
-        userService.createUser(user);
-//        bucketService.putObjectIntoBucket(awsClientConfig.getBucketName(), "danacv.pdf", cv.getInputStream());
+        ResponseInputStream<GetObjectResponse> response = s3Client.getObject(
+                request -> request.bucket("cvs-ccproject").key("file-name.txt"));
 
-        return bucketService.getBucketList().toString();
+        return StreamUtils.copyToString(response, StandardCharsets.UTF_8);
     }
 
 }
