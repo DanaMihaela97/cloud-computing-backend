@@ -29,7 +29,7 @@ public class UserController {
         userService.createUser(user);
         PutObjectRequest objReq = PutObjectRequest.builder()
                 .bucket("cvs-ccproject")
-                .key(user.getFirstName() + user.getLastName())
+                .key( user.getFirstName() + user.getLastName() + ".pdf")
                 .build();
         s3Client.putObject(objReq, RequestBody.fromInputStream(cv.getInputStream(), cv.getInputStream().available()));
         return "ok";
