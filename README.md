@@ -15,7 +15,7 @@ The backend of the career platform is built using Spring Boot. It handles the bu
 
 # Setup 
 
-Update application.properties with your AWS credentials, S3 bucket details, SNS topic ARN, and RDS (MySQL) database credentials.
+Update application.properties with your AWS credentials and RDS (MySQL) database credentials.
 ````spring.datasource.url=jdbc:mysql://your-rds-endpoint:3306/your-database````
 ````spring.datasource.username=````
 ````spring.datasource.password=````
