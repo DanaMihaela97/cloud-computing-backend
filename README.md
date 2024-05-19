@@ -8,10 +8,10 @@ The backend of the career platform is built using Spring Boot. It handles the bu
 
 # Features
 
-API for candidate form submission.
-CV storage in AWS S3.
-Email notifications using AWS SNS.
-Database management with AWS RDS (MySQL).
+* API for candidate form submission.
+* CV storage in AWS S3.
+* Email notifications using AWS SNS.
+* Database management with AWS RDS (MySQL).
 
 # Setup 
 
