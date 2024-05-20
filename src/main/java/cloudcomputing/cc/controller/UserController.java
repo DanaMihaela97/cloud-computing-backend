@@ -11,7 +11,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
-
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;
