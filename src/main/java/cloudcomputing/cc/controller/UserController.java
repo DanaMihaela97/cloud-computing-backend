@@ -39,39 +39,41 @@ public class UserController {
         // save cv in s3
         PutObjectRequest objReq = PutObjectRequest.builder()
                 .bucket("cvs-ccproject")
-                .key(user.getFirstName() + user.getLastName() + ".pdf")
+                .key(user.getFirstName() + "_" + user.getLastName() + ".pdf")
                 .build();
         s3Client.putObject(objReq, RequestBody.fromInputStream(cv.getInputStream(), cv.getInputStream().available()));
 
         // send initial email
+        String userEmail=user.getEmail();
         String subject = "Application Confirmation";
         String bodyText = "Hello " + user.getLastName() + ",\n\n" +
                 "We have successfully received your application for our open position.\n\n" +
                 "We will get back to you soon with further details.\n\n" +
                 "Best regards,\nOur Team";
 
-        sendEmail(subject, bodyText);
+        sendEmail(userEmail, subject, bodyText);
 
         // schedule follow-up email after 10 seconds
-        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
+        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user, userEmail), 10, TimeUnit.SECONDS);
 
         return "ok";
     }
 
-    private void sendEmail(String subject, String bodyText) {
+    private void sendEmail(String userEmail, String subject, String bodyText) {
         PublishRequest request = PublishRequest.builder()
                 .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
                 .subject(subject)
+                .topicArn(userEmail)
                 .message(bodyText)
                 .build();
         snsClient.publish(request);
     }
 
-    private void sendFollowUpEmail(User user) {
+    private void sendFollowUpEmail(User user, String userEmail) {
         String subject = "Application Status Update";
         String bodyText = getRandomMessage(user);
 
-        sendEmail(subject, bodyText);
+        sendEmail(userEmail, subject, bodyText);
     }
 
     private String getRandomMessage(User user) {
