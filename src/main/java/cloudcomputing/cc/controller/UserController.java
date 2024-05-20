@@ -11,6 +11,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.SubscribeRequest;
+
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -45,35 +47,41 @@ public class UserController {
 
         // send initial email
         String userEmail=user.getEmail();
+
+        SubscribeRequest subscribeRequest = SubscribeRequest.builder()
+                .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
+                .protocol("email")
+                .endpoint(userEmail).build();
+        snsClient.subscribe(subscribeRequest);
+
         String subject = "Application Confirmation";
         String bodyText = "Hello " + user.getLastName() + ",\n\n" +
                 "We have successfully received your application for our open position.\n\n" +
                 "We will get back to you soon with further details.\n\n" +
                 "Best regards,\nOur Team";
 
-        sendEmail(userEmail, subject, bodyText);
+        sendEmail(subject, bodyText);
 
         // schedule follow-up email after 10 seconds
-        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user, userEmail), 10, TimeUnit.SECONDS);
+        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
 
         return "ok";
     }
 
-    private void sendEmail(String userEmail, String subject, String bodyText) {
+    private void sendEmail(String subject, String bodyText) {
         PublishRequest request = PublishRequest.builder()
                 .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
                 .subject(subject)
-                .topicArn(userEmail)
                 .message(bodyText)
                 .build();
         snsClient.publish(request);
     }
 
-    private void sendFollowUpEmail(User user, String userEmail) {
+    private void sendFollowUpEmail(User user) {
         String subject = "Application Status Update";
         String bodyText = getRandomMessage(user);
 
-        sendEmail(userEmail, subject, bodyText);
+        sendEmail(subject, bodyText);
     }
 
     private String getRandomMessage(User user) {
