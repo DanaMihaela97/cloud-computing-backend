@@ -77,7 +77,7 @@ public class UserController {
     private String getRandomMessage(User user) {
         String name = user.getLastName();
         String[] messages = {
-                "Hello " + name + ",\n\n" + "Thank you for your application. We are currently reviewing it and will provide an update soon.",
+                "Hello " + name + ",\n\n" + "We are currently reviewing it and will provide an update soon.",
                 "Dear " + name + ",\n\n" + "We appreciate your interest in our company. I am writing to inform you that the vacancy you have applied for has now been filled and regrettably we did not get the chance to fully consider your application."
         };
         Random rand = new Random();
