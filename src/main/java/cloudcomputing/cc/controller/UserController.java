@@ -10,6 +10,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.ListSubscriptionsByTopicRequest;
+import software.amazon.awssdk.services.sns.model.ListSubscriptionsByTopicResponse;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 
@@ -35,7 +37,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public String createUser(@RequestPart User user, @RequestPart("cv") MultipartFile cv) throws IOException {
+    public String createUser(@RequestPart User user, @RequestPart("cv") MultipartFile cv) throws IOException, InterruptedException {
         userService.createUser(user);
 
         // save cv in s3
@@ -54,18 +56,37 @@ public class UserController {
                 .endpoint(userEmail).build();
         snsClient.subscribe(subscribeRequest);
 
-        String subject = "Application Confirmation";
-        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
-                "We have successfully received your application for our open position.\n\n" +
-                "We will get back to you soon with further details.\n\n" +
-                "Best regards,\nOur Team";
+        boolean isSubscribed = false;
+        int attempts = 0;
+        while (!isSubscribed && attempts < 10) {  // Maximum 10 attempts
+            Thread.sleep(10000);  // Wait for 10 seconds between attempts
+            ListSubscriptionsByTopicRequest listRequest = ListSubscriptionsByTopicRequest.builder()
+                    .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
+                    .build();
+            ListSubscriptionsByTopicResponse listResponse = snsClient.listSubscriptionsByTopic(listRequest);
 
-        sendEmail(subject, bodyText);
+            isSubscribed = listResponse.subscriptions().stream()
+                    .anyMatch(subscription -> subscription.endpoint().equals(userEmail) && !subscription.subscriptionArn().equals("PendingConfirmation"));
+            attempts++;
+        }
 
-        // schedule follow-up email after 10 seconds
-        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
+        if (isSubscribed) {
+            // Send initial email
+            String subject = "Application Confirmation";
+            String bodyText = "Hello " + user.getLastName() + ",\n\n" +
+                    "We have successfully received your application for our open position.\n\n" +
+                    "We will get back to you soon with further details.\n\n" +
+                    "Best regards,\nOur Team";
 
-        return "ok";
+            sendEmail(subject, bodyText);
+
+            // Schedule follow-up email after 10 seconds
+            scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
+
+            return "Subscription confirmed and emails sent.";
+        } else {
+            return "Subscription not confirmed. Please check your email to confirm the subscription.";
+        }
     }
 
     private void sendEmail(String subject, String bodyText) {
@@ -87,8 +108,10 @@ public class UserController {
     private String getRandomMessage(User user) {
         String name = user.getLastName();
         String[] messages = {
-                "Hello " + name + ",\n\n" + "We are pleased to inform you that your application has successfully passed to the next stage of our selection process. Congratulations! You will receive further instructions shortly regarding what you need to prepare for the next steps.",
-                "Dear " + name + ",\n\n" + "We appreciate your interest in our company. I am writing to inform you that the vacancy you have applied for has now been filled and regrettably we did not get the chance to fully consider your application."
+                "Hello " + name + ",\n\n" +
+                        "We are pleased to inform you that your application has successfully passed to the next stage of our selection process. Congratulations! You will receive further instructions shortly regarding what you need to prepare for the next steps.",
+                "Dear " + name + ",\n\n" +
+                        "We appreciate your interest in our company. I am writing to inform you that the vacancy you have applied for has now been filled and regrettably we did not get the chance to fully consider your application."
         };
 
         Random rand = new Random();
