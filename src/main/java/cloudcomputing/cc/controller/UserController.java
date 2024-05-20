@@ -46,24 +46,24 @@ public class UserController {
         s3Client.putObject(objReq, RequestBody.fromInputStream(cv.getInputStream(), cv.getInputStream().available()));
 
         // send initial email
-        String userEmail = user.getEmail();
+        String userEmail=user.getEmail();
 
         SubscribeRequest subscribeRequest = SubscribeRequest.builder()
                 .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
                 .protocol("email")
-                .endpoint(userEmail)
-                .build();
+                .endpoint(userEmail).build();
         snsClient.subscribe(subscribeRequest);
 
-        String subjectConfirmation = "Application Confirmation";
-        String bodyTextConfirmation = "Hello " + user.getLastName() + ",\n\n" +
+        String subject = "Application Confirmation";
+        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
                 "We have successfully received your application for our open position.\n\n" +
                 "We will get back to you soon with further details.\n\n" +
                 "Best regards,\nOur Team";
 
-        sendEmail(subjectConfirmation, bodyTextConfirmation);
+        //sendEmail(subject, bodyText);
 
         // schedule follow-up email after 10 seconds
+        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
         scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
 
         return "ok";
