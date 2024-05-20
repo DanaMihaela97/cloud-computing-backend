@@ -13,6 +13,7 @@ import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -22,14 +23,13 @@ public class UserController {
     private final UserService userService;
     private final S3Client s3Client;
     private final SnsClient snsClient;
-    private final ScheduledExecutorService scheduledExecutorService;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
 
     @Autowired
-    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient, ScheduledExecutorService scheduledExecutorService) {
+    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient) {
         this.userService = userService;
         this.s3Client = s3Client;
         this.snsClient = snsClient;
-        this.scheduledExecutorService = scheduledExecutorService;
     }
 
     @PostMapping(path = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
