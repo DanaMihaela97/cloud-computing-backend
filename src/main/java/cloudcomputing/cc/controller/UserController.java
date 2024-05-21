@@ -26,6 +26,7 @@ public class UserController {
     private final S3Client s3Client;
     private final SnsClient snsClient;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
+    private boolean initialEmailSent = false;
 
     @Autowired
     public UserController(UserService userService, S3Client s3Client, SnsClient snsClient) {
@@ -46,7 +47,7 @@ public class UserController {
         s3Client.putObject(objReq, RequestBody.fromInputStream(cv.getInputStream(), cv.getInputStream().available()));
 
         // send initial email
-        String userEmail=user.getEmail();
+        String userEmail = user.getEmail();
 
         SubscribeRequest subscribeRequest = SubscribeRequest.builder()
                 .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
@@ -60,11 +61,18 @@ public class UserController {
                 "We will get back to you soon with further details.\n\n" +
                 "Best regards,\nOur Team";
 
-        //sendEmail(subject, bodyText);
+        // schedule sending initial email after 3 seconds
+        scheduledExecutorService.schedule(() -> {
+            sendEmail(subject, bodyText);
+            initialEmailSent = true;
+        }, 3, TimeUnit.SECONDS);
 
-        // schedule follow-up email after 10 seconds
-        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
-        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
+        // schedule sending follow-up email after 10 seconds
+        scheduledExecutorService.schedule(() -> {
+            if (initialEmailSent) {
+                sendFollowUpEmail(user);
+            }
+        }, 10, TimeUnit.SECONDS);
 
         return "ok";
     }
