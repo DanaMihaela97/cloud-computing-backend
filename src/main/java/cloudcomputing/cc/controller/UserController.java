@@ -61,11 +61,8 @@ public class UserController {
                 "We will get back to you soon with further details.\n\n" +
                 "Best regards,\nOur Team";
 
-        // schedule sending initial email after 3 seconds
-        scheduledExecutorService.schedule(() -> {
-            sendEmail(subject, bodyText);
-            initialEmailSent = true;
-        }, 3, TimeUnit.SECONDS);
+        // send initial email
+        sendEmail(subject, bodyText);
 
         // schedule sending follow-up email after 10 seconds
         scheduledExecutorService.schedule(() -> {
@@ -84,6 +81,9 @@ public class UserController {
                 .message(bodyText)
                 .build();
         snsClient.publish(request);
+
+        // set initialEmailSent flag to true after sending the initial email
+        initialEmailSent = true;
     }
 
     private void sendFollowUpEmail(User user) {
