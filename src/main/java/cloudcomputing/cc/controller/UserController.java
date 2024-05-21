@@ -54,16 +54,10 @@ public class UserController {
                 .endpoint(userEmail).build();
         snsClient.subscribe(subscribeRequest);
 
-        String subject = "Application Confirmation";
-        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
-                "We have successfully received your application for our open position.\n\n" +
-                "We will get back to you soon with further details.\n\n" +
-                "Best regards,\nOur Team";
-
         //sendEmail(subject, bodyText);
 
-        // schedule follow-up email after 10 seconds
-        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
+//        // schedule follow-up email after 10 seconds
+//        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
         scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
 
         return "ok";
@@ -79,20 +73,23 @@ public class UserController {
     }
 
     private void sendFollowUpEmail(User user) {
-        String subject = "Application Status Update";
-        String bodyText = getRandomMessage(user);
+        String subject = "Application Confirmation";
+        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
+                "We have successfully received your application for our open position.\n\n" +
+                "We will get back to you soon with further details.\n\n" +
+                "Best regards,\nOur Team";
 
         sendEmail(subject, bodyText);
     }
 
-    private String getRandomMessage(User user) {
-        String name = user.getLastName();
-        String[] messages = {
-                "Hello " + name + ",\n\n" + "We are pleased to inform you that your application has successfully passed to the next stage of our selection process. Congratulations! You will receive further instructions shortly regarding what you need to prepare for the next steps.",
-                "Dear " + name + ",\n\n" + "We appreciate your interest in our company. I am writing to inform you that the vacancy you have applied for has now been filled and regrettably we did not get the chance to fully consider your application."
-        };
-
-        Random rand = new Random();
-        return messages[rand.nextInt(messages.length)];
-    }
+//    private String getRandomMessage(User user) {
+//        String name = user.getLastName();
+//        String[] messages = {
+//                "Hello " + name + ",\n\n" + "We are pleased to inform you that your application has successfully passed to the next stage of our selection process. Congratulations! You will receive further instructions shortly regarding what you need to prepare for the next steps.",
+//                "Dear " + name + ",\n\n" + "We appreciate your interest in our company. I am writing to inform you that the vacancy you have applied for has now been filled and regrettably we did not get the chance to fully consider your application."
+//        };
+//
+//        Random rand = new Random();
+//        return messages[rand.nextInt(messages.length)];
+//    }
 }
