@@ -58,9 +58,9 @@ public class UserController {
 
 //        // schedule follow-up email after 10 seconds
 //        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
-        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 3, TimeUnit.SECONDS);
+        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
 
-        return "Please, check your email!";
+        return "ok";
     }
 
     private void sendEmail(String subject, String bodyText) {
