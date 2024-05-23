@@ -10,10 +10,12 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,17 +62,17 @@ public class UserController {
 //        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
         scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
 
-        return "ok";
+        return "Please check your email to confirm your subscription.";
     }
 
-    private void sendEmail(String subject, String bodyText) {
-        PublishRequest request = PublishRequest.builder()
-                .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
-                .subject(subject)
-                .message(bodyText)
-                .build();
-        snsClient.publish(request);
-    }
+//    private void sendEmail(String subject, String bodyText) {
+//        PublishRequest request = PublishRequest.builder()
+//                .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
+//                .subject(subject)
+//                .message(bodyText)
+//                .build();
+//        snsClient.publish(request);
+//    }
 
     private void sendFollowUpEmail(User user) {
         String subject = "Application Confirmation";
@@ -79,9 +81,21 @@ public class UserController {
                 "We will get back to you soon with further details.\n\n" +
                 "Best regards,\nOur Team";
 
-        sendEmail(subject, bodyText);
+        sendEmailToUser(user.getEmail(), subject, bodyText);
     }
-
+    private void sendEmailToUser(String userEmail, String subject, String bodyText) {
+        PublishRequest request = PublishRequest.builder()
+                .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
+                .subject(subject)
+                .message(bodyText)
+                .messageAttributes(
+                        Collections.singletonMap("email", MessageAttributeValue.builder()
+                                .dataType("String")
+                                .stringValue(userEmail)
+                                .build()))
+                .build();
+        snsClient.publish(request);
+    }
 //    private String getRandomMessage(User user) {
 //        String name = user.getLastName();
 //        String[] messages = {
