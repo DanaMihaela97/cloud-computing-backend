@@ -1,6 +1,8 @@
 package cloudcomputing.cc.controller;
 
+import cloudcomputing.cc.entity.Job;
 import cloudcomputing.cc.entity.User;
+import cloudcomputing.cc.service.JobService;
 import cloudcomputing.cc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -12,12 +14,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
-
 import java.io.IOException;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1/openingjobs")
@@ -25,13 +25,15 @@ public class UserController {
     private final UserService userService;
     private final S3Client s3Client;
     private final SnsClient snsClient;
+    private final JobService jobService;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
 
     @Autowired
-    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient) {
+    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient, JobService jobService) {
         this.userService = userService;
         this.s3Client = s3Client;
         this.snsClient = snsClient;
+        this.jobService = jobService;
     }
 
     @PostMapping(path = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -58,11 +60,20 @@ public class UserController {
 
 //        // schedule follow-up email after 10 seconds
 //        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
-        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
+//        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
+        List<Job> allJobs = jobService.getAllJobs();
+        for (Job job : allJobs) {
+            notifySubscribersAboutNewJob(job);
+        }
 
         return "ok";
     }
+    private void notifySubscribersAboutNewJob(Job newJob) {
+        String subject = "New Jobs Posted!";
+        String bodyText = "A new job has been posted on the platform. Job details are available at http://34.235.53.175:4200/jobs" + newJob.getId();
 
+        sendEmail(subject, bodyText);
+    }
     private void sendEmail(String subject, String bodyText) {
         PublishRequest request = PublishRequest.builder()
                 .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
@@ -72,24 +83,14 @@ public class UserController {
         snsClient.publish(request);
     }
 
-    private void sendFollowUpEmail(User user) {
-        String subject = "Application Confirmation";
-        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
-                "We have successfully received your application for our open position.\n\n" +
-                "We will get back to you soon with further details.\n\n" +
-                "Best regards,\nOur Team";
-
-        sendEmail(subject, bodyText);
-    }
-
-//    private String getRandomMessage(User user) {
-//        String name = user.getLastName();
-//        String[] messages = {
-//                "Hello " + name + ",\n\n" + "We are pleased to inform you that your application has successfully passed to the next stage of our selection process. Congratulations! You will receive further instructions shortly regarding what you need to prepare for the next steps.",
-//                "Dear " + name + ",\n\n" + "We appreciate your interest in our company. I am writing to inform you that the vacancy you have applied for has now been filled and regrettably we did not get the chance to fully consider your application."
-//        };
+//    private void sendFollowUpEmail(User user) {
+//        String subject = "Application Confirmation";
+//        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
+//                "We have successfully received your application for our open position.\n\n" +
+//                "We will get back to you soon with further details.\n\n" +
+//                "Best regards,\nOur Team";
 //
-//        Random rand = new Random();
-//        return messages[rand.nextInt(messages.length)];
+//        sendEmail(subject, bodyText);
 //    }
+
 }
