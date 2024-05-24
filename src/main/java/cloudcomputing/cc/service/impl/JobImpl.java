@@ -32,4 +32,9 @@ public class JobImpl implements JobService {
         return jobRepository.findById(id);
     }
 
+
+    @Override
+    public void deleteJobById(Long id) {
+        jobRepository.deleteById(id);
+    }
 }
