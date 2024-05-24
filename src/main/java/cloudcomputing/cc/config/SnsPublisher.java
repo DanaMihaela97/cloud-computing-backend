@@ -6,11 +6,6 @@ import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 @Configuration
 public class SnsPublisher {
-    @Bean
-    public SnsPublisher snsPublisher(SnsClient snsClient) {
-        return new SnsPublisher(snsClient);
-    }
-
     private final SnsClient snsClient;
 
     public SnsPublisher(SnsClient snsClient) {
