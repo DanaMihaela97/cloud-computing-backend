@@ -12,12 +12,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.sns.SnsClient;
-import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 @RestController
 @RequestMapping("/api/v1/openingjobs")
@@ -54,28 +50,8 @@ public class UserController {
                 .protocol("email")
                 .endpoint(userEmail).build();
         snsClient.subscribe(subscribeRequest);
-
-        List<Job> allJobs = jobService.getAllJobs();
-        notifySubscribersAboutNewJob();
         return "ok";
     }
-    private void notifySubscribersAboutNewJob() {
-        String subject = "New Jobs Posted!";
-        String bodyText = "A new job has been posted on the platform. Check out the latest jobs at our website.";
 
-        String platformUrl = "http://34.235.53.175:4200";
-
-        bodyText += "\n\nVisit us at: " + platformUrl;
-
-        sendEmail(subject, bodyText);
-    }
-    private void sendEmail(String subject, String bodyText) {
-        PublishRequest request = PublishRequest.builder()
-                .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
-                .subject(subject)
-                .message(bodyText)
-                .build();
-        snsClient.publish(request);
-    }
 
 }
