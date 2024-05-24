@@ -26,7 +26,6 @@ public class UserController {
     private final S3Client s3Client;
     private final SnsClient snsClient;
     private final JobService jobService;
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(5);
 
     @Autowired
     public UserController(UserService userService, S3Client s3Client, SnsClient snsClient, JobService jobService) {
@@ -56,21 +55,17 @@ public class UserController {
                 .endpoint(userEmail).build();
         snsClient.subscribe(subscribeRequest);
 
-        //sendEmail(subject, bodyText);
-
-//        // schedule follow-up email after 10 seconds
-//        scheduledExecutorService.schedule(()-> sendEmail(subject, bodyText), 3, TimeUnit.SECONDS);
-//        scheduledExecutorService.schedule(() -> sendFollowUpEmail(user), 10, TimeUnit.SECONDS);
         List<Job> allJobs = jobService.getAllJobs();
-        for (Job job : allJobs) {
-            notifySubscribersAboutNewJob(job);
-        }
-
+        notifySubscribersAboutNewJob();
         return "ok";
     }
-    private void notifySubscribersAboutNewJob(Job newJob) {
+    private void notifySubscribersAboutNewJob() {
         String subject = "New Jobs Posted!";
-        String bodyText = "A new job has been posted on the platform. Job details are available at http://34.235.53.175:4200/jobs" + newJob.getId();
+        String bodyText = "A new job has been posted on the platform. Check out the latest jobs at our website.";
+
+        String platformUrl = "http://34.235.53.175:4200";
+
+        bodyText += "\n\nVisit us at: " + platformUrl;
 
         sendEmail(subject, bodyText);
     }
@@ -82,15 +77,5 @@ public class UserController {
                 .build();
         snsClient.publish(request);
     }
-
-//    private void sendFollowUpEmail(User user) {
-//        String subject = "Application Confirmation";
-//        String bodyText = "Hello " + user.getLastName() + ",\n\n" +
-//                "We have successfully received your application for our open position.\n\n" +
-//                "We will get back to you soon with further details.\n\n" +
-//                "Best regards,\nOur Team";
-//
-//        sendEmail(subject, bodyText);
-//    }
 
 }
