@@ -1,8 +1,6 @@
 package cloudcomputing.cc.controller;
 
-import cloudcomputing.cc.entity.Job;
 import cloudcomputing.cc.entity.User;
-import cloudcomputing.cc.service.JobService;
 import cloudcomputing.cc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -21,14 +19,12 @@ public class UserController {
     private final UserService userService;
     private final S3Client s3Client;
     private final SnsClient snsClient;
-    private final JobService jobService;
 
     @Autowired
-    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient, JobService jobService) {
+    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient) {
         this.userService = userService;
         this.s3Client = s3Client;
         this.snsClient = snsClient;
-        this.jobService = jobService;
     }
 
     @PostMapping(path = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
