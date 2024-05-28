@@ -1,6 +1,6 @@
 package cloudcomputing.cc.config;
 
-import org.springframework.context.annotation.Bean;
+
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;

@@ -19,6 +19,8 @@ public class Job {
     @Column(length = 5000, nullable = false)
     private String skills;
     @Column(nullable = false)
+    private String experience;
+    @Column(nullable = false)
     private String url;
 
 }
