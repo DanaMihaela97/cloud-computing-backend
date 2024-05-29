@@ -62,5 +62,9 @@ public class JobController {
 
         return ResponseEntity.ok(jb);
     }
+    @DeleteMapping("/jobs/{id}")
+    public void deleteJob(@PathVariable Long id){
+        jobService.deleteJobById(id);
+    }
 
 }
