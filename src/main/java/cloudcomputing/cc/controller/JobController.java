@@ -55,7 +55,7 @@ public class JobController {
             jb.add(savedJob);
         }
         String subject = "New Jobs Posted!";
-        String bodyText = "A new job has been posted on the platform. Check out the latest jobs at our website.";
+        String bodyText = "New jobs have been posted on the platform. Check out the latest jobs at our website.";
         String platformUrl = "http://34.235.53.175:4200/jobs";
         bodyText += "\n\nVisit us at: " + platformUrl;
         snsPublisher.sendEmail(subject, bodyText);
