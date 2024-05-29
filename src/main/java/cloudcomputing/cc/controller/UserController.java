@@ -1,9 +1,12 @@
 package cloudcomputing.cc.controller;
 
+import cloudcomputing.cc.config.S3Config;
+import cloudcomputing.cc.config.SnsPublisher;
 import cloudcomputing.cc.entity.User;
 import cloudcomputing.cc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -17,36 +20,27 @@ import java.io.IOException;
 @RequestMapping("/api/v1/openingjobs")
 public class UserController {
     private final UserService userService;
-    private final S3Client s3Client;
-    private final SnsClient snsClient;
+    private final S3Config s3Config;
+    private final SnsPublisher snsPublisher;
 
     @Autowired
-    public UserController(UserService userService, S3Client s3Client, SnsClient snsClient) {
+    public UserController(UserService userService, S3Config s3Config, SnsPublisher snsPublisher) {
         this.userService = userService;
-        this.s3Client = s3Client;
-        this.snsClient = snsClient;
+        this.s3Config = s3Config;
+        this.snsPublisher = snsPublisher;
     }
 
     @PostMapping(path = "/apply", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public String createUser(@RequestPart User user, @RequestPart("cv") MultipartFile cv) throws IOException {
+    public ResponseEntity<String> createUser(@RequestPart User user, @RequestPart("cv") MultipartFile cv) throws IOException {
         userService.createUser(user);
 
-        // save cv in s3
-        PutObjectRequest objReq = PutObjectRequest.builder()
-                .bucket("cvs-ccproject")
-                .key(user.getFirstName() + "_" + user.getLastName() + ".pdf")
-                .build();
-        s3Client.putObject(objReq, RequestBody.fromInputStream(cv.getInputStream(), cv.getInputStream().available()));
+        String key = user.getFirstName() + "_" + user.getLastName() + ".pdf";
+        s3Config.saveInS3(key, cv.getInputStream());
 
-        // send initial email
         String userEmail=user.getEmail();
+        snsPublisher.subscribe(userEmail);
 
-        SubscribeRequest subscribeRequest = SubscribeRequest.builder()
-                .topicArn("arn:aws:sns:us-east-1:814615723430:cc-sns")
-                .protocol("email")
-                .endpoint(userEmail).build();
-        snsClient.subscribe(subscribeRequest);
-        return "ok";
+        return ResponseEntity.ok("Created user");
     }
 
 
